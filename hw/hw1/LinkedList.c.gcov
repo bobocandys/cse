@@ -1,0 +1,448 @@
+        -:    0:Source:LinkedList.c
+        -:    0:Graph:LinkedList.gcno
+        -:    0:Data:LinkedList.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/*
+        -:    2: * Copyright 2012 Steven Gribble
+        -:    3: *
+        -:    4: *  This file is part of the UW CSE 333 project sequence (333proj12).
+        -:    5: *
+        -:    6: *  333proj12 is free software: you can redistribute it and/or modify
+        -:    7: *  it under the terms of the GNU General Public License as published
+        -:    8: *  by the Free Software Foundation, either version 3 of the License,
+        -:    9: *  or (at your option) any later version.
+        -:   10: *
+        -:   11: *  333proj12 is distributed in the hope that it will be useful, but
+        -:   12: *  WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13: *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        -:   14: *  General Public License for more details.
+        -:   15: *
+        -:   16: *  You should have received a copy of the GNU General Public License
+        -:   17: *  along with 333proj12.  If not, see <http://www.gnu.org/licenses/>.
+        -:   18: */
+        -:   19:
+        -:   20:#include <stdio.h>
+        -:   21:#include <stdlib.h>
+        -:   22:
+        -:   23:#include "CSE333.h"
+        -:   24:#include "LinkedList.h"
+        -:   25:#include "LinkedList_priv.h"
+        -:   26:
+      554:   27:LinkedList AllocateLinkedList(void) {
+        -:   28:  // allocate the linked list record
+      554:   29:  LinkedList ll = (LinkedList) malloc(sizeof(LinkedListHead));
+      554:   30:  if (ll == NULL) {
+        -:   31:    // out of memory
+    #####:   32:    return (LinkedList) NULL;
+        -:   33:  }
+        -:   34:
+        -:   35:  // Step 1.
+        -:   36:  // initialize the newly allocated record structure
+      554:   37:  ll->num_elements = 0;
+      554:   38:  ll->head = NULL;
+      554:   39:  ll->tail = NULL;
+        -:   40:
+        -:   41:  // return our newly minted linked list
+      554:   42:  return ll;
+        -:   43:}
+        -:   44:
+      554:   45:void FreeLinkedList(LinkedList list,
+        -:   46:                    LLPayloadFreeFnPtr payload_free_function) {
+        -:   47:  LinkedListNodePtr temp;
+        -:   48:
+        -:   49:  // defensive programming: check arguments for sanity.
+      554:   50:  Verify333(list != NULL);
+      554:   51:  Verify333(payload_free_function != NULL);
+        -:   52:
+        -:   53:  // Step 2.
+        -:   54:  // sweep through the list and free all of the nodes' payloads as
+        -:   55:  // well as the nodes themselves
+     1113:   56:  while (list->head != NULL) {
+        5:   57:    temp = list->head;
+        5:   58:    list->head = temp->next;
+        5:   59:    (*payload_free_function)(temp->payload);
+        5:   60:    free(temp);
+        -:   61:  }
+        -:   62:
+        -:   63:  // free the list record
+      554:   64:  free(list);
+      554:   65:}
+        -:   66:
+     4879:   67:HWSize_t NumElementsInLinkedList(LinkedList list) {
+        -:   68:  // defensive programming: check argument for safety.
+     4879:   69:  Verify333(list != NULL);
+     4879:   70:  return list->num_elements;
+        -:   71:}
+        -:   72:
+      584:   73:bool PushLinkedList(LinkedList list, LLPayload_t payload) {
+        -:   74:  // defensive programming: check argument for safety. The user-supplied
+        -:   75:  // argument can be anything, of course, so we need to make sure it's
+        -:   76:  // reasonable (e.g., not NULL).
+      584:   77:  Verify333(list != NULL);
+        -:   78:
+        -:   79:  // allocate space for the new node.
+      584:   80:  LinkedListNodePtr ln =
+        -:   81:    (LinkedListNodePtr) malloc(sizeof(LinkedListNode));
+      584:   82:  if (ln == NULL) {
+        -:   83:    // out of memory
+    #####:   84:    return false;
+        -:   85:  }
+        -:   86:
+        -:   87:  // set the payload
+      584:   88:  ln->payload = payload;
+        -:   89:
+      584:   90:  if (list->num_elements == 0) {
+        -:   91:    // degenerate case; list is currently empty
+      404:   92:    Verify333(list->head == NULL);  // debugging aid
+      404:   93:    Verify333(list->tail == NULL);  // debugging aid
+      404:   94:    ln->next = ln->prev = NULL;
+      404:   95:    list->head = list->tail = ln;
+      404:   96:    list->num_elements = 1U;
+      404:   97:    return true;
+        -:   98:  }
+        -:   99:
+        -:  100:  // STEP 3.
+        -:  101:  // typical case; list has >=1 elements
+      180:  102:  ln->next = list->head;
+      180:  103:  (list->head)->prev = ln;
+      180:  104:  ln->prev = NULL;
+      180:  105:  list->head = ln;
+      180:  106:  (list->num_elements)++;
+        -:  107:
+        -:  108:  // return success
+      180:  109:  return true;
+        -:  110:}
+        -:  111:
+      251:  112:bool PopLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
+        -:  113:  LinkedListNodePtr temp;
+        -:  114:
+        -:  115:  // defensive programming.
+      251:  116:  Verify333(payload_ptr != NULL);
+      251:  117:  Verify333(list != NULL);
+        -:  118:
+        -:  119:  // Step 4: implement PopLinkedList.  Make sure you test for
+        -:  120:  // and empty list and fail.  If the list is non-empty, there
+        -:  121:  // are two cases to consider: (a) a list with a single element in it
+        -:  122:  // and (b) the general case of a list with >=2 elements in it.
+        -:  123:  // Be sure to call free() to deallocate the memory that was
+        -:  124:  // previously allocated by PushLinkedList().
+        -:  125:
+        -:  126:  // if the list has no element
+      251:  127:  if (list->num_elements == 0) {
+        1:  128:    return false;
+        -:  129:  }
+        -:  130:
+      250:  131:  temp = list->head;
+      250:  132:  *payload_ptr = temp->payload;
+        -:  133:
+      250:  134:  if (list->num_elements == 1) {  // single element list
+      129:  135:    list->num_elements = 0;
+      129:  136:    list->head = NULL;
+      129:  137:    list->tail = NULL;
+        -:  138:  } else {
+      121:  139:    (list->num_elements)--;
+      121:  140:    list->head = temp->next;
+      121:  141:    (list->head)->prev = NULL;
+      121:  142:    temp->next = NULL;
+        -:  143:  }
+        -:  144:
+      250:  145:  free(temp);  // free the list node
+      250:  146:  return true;
+        -:  147:}
+        -:  148:
+        9:  149:bool AppendLinkedList(LinkedList list, LLPayload_t payload) {
+        -:  150:  // defensive programming: check argument for safety.
+        9:  151:  Verify333(list != NULL);
+        -:  152:
+        -:  153:  // Step 5: implement AppendLinkedList.  It's kind of like
+        -:  154:  // PushLinkedList, but obviously you need to add to the end
+        -:  155:  // instead of the beginning.
+        -:  156:
+        -:  157:  // Allocate space for the new node
+        9:  158:  LinkedListNodePtr ln =
+        -:  159:    (LinkedListNodePtr) malloc(sizeof(LinkedListNode));
+        -:  160:
+        9:  161:  if (ln == NULL) {
+        -:  162:    // out of memory
+    #####:  163:    return false;
+        -:  164:  }
+        -:  165:
+        9:  166:  ln->payload = payload;
+        -:  167:
+        9:  168:  if (list->num_elements == 0) {
+        4:  169:    ln->next = ln->prev = NULL;
+        4:  170:    list->head = list->tail = ln;
+        4:  171:    list->num_elements = 1U;
+        4:  172:    return true;
+        -:  173:  }
+        -:  174:
+        -:  175:  // When there is >= 1 nodes in the list
+        5:  176:  ln->next = NULL;
+        5:  177:  ln->prev = list->tail;
+        5:  178:  (list->tail)->next = ln;
+        5:  179:  list->tail = ln;
+        5:  180:  (list->num_elements)++;
+        -:  181:
+        5:  182:  return true;
+        -:  183:}
+        -:  184:
+        3:  185:bool SliceLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
+        -:  186:  LinkedListNodePtr temp;
+        -:  187:
+        -:  188:  // defensive programming.
+        3:  189:  Verify333(payload_ptr != NULL);
+        3:  190:  Verify333(list != NULL);
+        -:  191:
+        -:  192:  // Step 6: implement SliceLinkedList.
+        -:  193:
+        -:  194:  // nothing in the list
+        3:  195:  if (list->num_elements == 0) {
+        1:  196:    return false;
+        -:  197:  }
+        -:  198:
+        2:  199:  if (list->num_elements == 1) {
+        -:  200:    // single element case
+        1:  201:    *payload_ptr = (list->head)->payload;
+        1:  202:    (list->head)->prev = NULL;
+        1:  203:    (list->head)->next = NULL;
+        1:  204:    list->num_elements = 0;
+        1:  205:    free(list->head);
+        -:  206:  } else {
+        1:  207:    *payload_ptr = (list->tail)->payload;
+        1:  208:    ((list->tail)->prev)->next = NULL;
+        1:  209:    temp = list->tail;
+        1:  210:    list->tail = (list->tail)->prev;
+        1:  211:    temp->prev = NULL;
+        1:  212:    free(temp);
+        1:  213:    (list->num_elements)--;
+        -:  214:  }
+        -:  215:
+        2:  216:  return true;
+        -:  217:}
+        -:  218:
+        2:  219:void SortLinkedList(LinkedList list, unsigned int ascending,
+        -:  220:                    LLPayloadComparatorFnPtr comparator_function) {
+        2:  221:  Verify333(list != NULL);  // defensive programming
+        2:  222:  if (list->num_elements < 2) {
+        -:  223:    // no sorting needed
+        2:  224:    return;
+        -:  225:  }
+        -:  226:
+        -:  227:  // we'll implement bubblesort! nice and easy, and nice and slow :)
+        -:  228:  int swapped;
+        -:  229:  do {
+        -:  230:    LinkedListNodePtr curnode;
+        -:  231:
+        6:  232:    swapped = 0;
+        6:  233:    curnode = list->head;
+       24:  234:    while (curnode->next != NULL) {
+       12:  235:      int compare_result = comparator_function(curnode->payload,
+       12:  236:                                               curnode->next->payload);
+       12:  237:      if (ascending) {
+        6:  238:        compare_result *= -1;
+        -:  239:      }
+       12:  240:      if (compare_result < 0) {
+        -:  241:        // bubble-swap payloads
+        -:  242:        LLPayload_t tmp;
+        6:  243:        tmp = curnode->payload;
+        6:  244:        curnode->payload = curnode->next->payload;
+        6:  245:        curnode->next->payload = tmp;
+        6:  246:        swapped = 1;
+        -:  247:      }
+       12:  248:      curnode = curnode->next;
+        -:  249:    }
+        6:  250:  } while (swapped);
+        -:  251:}
+        -:  252:
+     1458:  253:LLIter LLMakeIterator(LinkedList list, int pos) {
+        -:  254:  // defensive programming
+     1458:  255:  Verify333(list != NULL);
+     1458:  256:  Verify333((pos == 0) || (pos == 1));
+        -:  257:
+        -:  258:  // if the list is empty, return failure.
+     1458:  259:  if (NumElementsInLinkedList(list) == 0U)
+        1:  260:    return NULL;
+        -:  261:
+        -:  262:  // OK, let's manufacture an iterator.
+     1457:  263:  LLIter li = (LLIter) malloc(sizeof(LLIterSt));
+     1457:  264:  if (li == NULL) {
+        -:  265:    // out of memory!
+    #####:  266:    return NULL;
+        -:  267:  }
+        -:  268:
+        -:  269:  // set up the iterator.
+     1457:  270:  li->list = list;
+     1457:  271:  if (pos == 0) {
+     1457:  272:    li->node = list->head;
+        -:  273:  } else {
+    #####:  274:    li->node = list->tail;
+        -:  275:  }
+        -:  276:
+        -:  277:  // return the new iterator
+     1457:  278:  return li;
+        -:  279:}
+        -:  280:
+     1457:  281:void LLIteratorFree(LLIter iter) {
+        -:  282:  // defensive programming
+     1457:  283:  Verify333(iter != NULL);
+     1457:  284:  free(iter);
+     1457:  285:}
+        -:  286:
+        3:  287:bool LLIteratorHasNext(LLIter iter) {
+        -:  288:  // defensive programming
+        3:  289:  Verify333(iter != NULL);
+        3:  290:  Verify333(iter->list != NULL);
+        3:  291:  Verify333(iter->node != NULL);
+        -:  292:
+        -:  293:  // Is there another node beyond the iterator?
+        3:  294:  if (iter->node->next == NULL)
+        1:  295:    return false;  // no
+        -:  296:
+        2:  297:  return true;  // yes
+        -:  298:}
+        -:  299:
+      896:  300:bool LLIteratorNext(LLIter iter) {
+        -:  301:  // defensive programming
+      896:  302:  Verify333(iter != NULL);
+      896:  303:  Verify333(iter->list != NULL);
+      896:  304:  Verify333(iter->node != NULL);
+        -:  305:
+        -:  306:  // Step 7: if there is another node beyond the iterator, advance to it,
+        -:  307:  // and return true.
+      896:  308:  if (iter->node->next != NULL) {
+        -:  309:    // There is another node
+      271:  310:    iter->node = iter->node->next;
+      271:  311:    return true;
+        -:  312:  }
+        -:  313:
+        -:  314:  // Nope, there isn't another node, so return failure.
+      625:  315:  return false;
+        -:  316:}
+        -:  317:
+        6:  318:bool LLIteratorHasPrev(LLIter iter) {
+        -:  319:  // defensive programming
+        6:  320:  Verify333(iter != NULL);
+        6:  321:  Verify333(iter->list != NULL);
+        6:  322:  Verify333(iter->node != NULL);
+        -:  323:
+        -:  324:  // Is there another node beyond the iterator?
+        6:  325:  if (iter->node->prev == NULL)
+        4:  326:    return false;  // no
+        -:  327:
+        2:  328:  return true;  // yes
+        -:  329:}
+        -:  330:
+        5:  331:bool LLIteratorPrev(LLIter iter) {
+        -:  332:  // defensive programming
+        5:  333:  Verify333(iter != NULL);
+        5:  334:  Verify333(iter->list != NULL);
+        5:  335:  Verify333(iter->node != NULL);
+        -:  336:
+        -:  337:  // Step 8:  if there is another node beyond the iterator, advance to it,
+        -:  338:  // and return true.
+        5:  339:  if (iter->node->prev != NULL) {
+        -:  340:    // There is another node
+        4:  341:    iter->node = iter->node->prev;
+        4:  342:    return true;
+        -:  343:  }
+        -:  344:
+        -:  345:  // nope, so return failure.
+        1:  346:  return false;
+        -:  347:}
+        -:  348:
+     1767:  349:void LLIteratorGetPayload(LLIter iter, LLPayload_t *payload) {
+        -:  350:  // defensive programming
+     1767:  351:  Verify333(iter != NULL);
+     1767:  352:  Verify333(iter->list != NULL);
+     1767:  353:  Verify333(iter->node != NULL);
+        -:  354:
+        -:  355:  // set the return parameter.
+     1767:  356:  *payload = iter->node->payload;
+     1767:  357:}
+        -:  358:
+      337:  359:bool LLIteratorDelete(LLIter iter,
+        -:  360:                      LLPayloadFreeFnPtr payload_free_function) {
+        -:  361:  LinkedListNodePtr temp;
+        -:  362:
+        -:  363:  // defensive programming
+      337:  364:  Verify333(iter != NULL);
+      337:  365:  Verify333(iter->list != NULL);
+      337:  366:  Verify333(iter->node != NULL);
+        -:  367:
+        -:  368:  // Step 9: implement LLIteratorDelete.  This is the most
+        -:  369:  // complex function you'll build.  There are several cases
+        -:  370:  // to consider:
+        -:  371:  //
+        -:  372:  // - degenerate case: the list becomes empty after deleting.
+        -:  373:  // - degenerate case: iter points at head
+        -:  374:  // - degenerate case: iter points at tail
+        -:  375:  // - fully general case: iter points in the middle of a list,
+        -:  376:  //                       and you have to "splice".
+        -:  377:  //
+        -:  378:  // Be sure to call the payload_free_function to free the payload
+        -:  379:  // the iterator is pointing to, and also free any LinkedList
+        -:  380:  // data structure element as appropriate.
+        -:  381:
+      337:  382:  (*payload_free_function)(iter->node->payload);  // Free the payload
+        -:  383:
+      337:  384:  if (iter->list->num_elements == 1) {
+        -:  385:    // Case when the list becomes empty after deleting
+      275:  386:    free(iter->node);  // Free the node
+      275:  387:    iter->list->num_elements = 0;
+      275:  388:    iter->list->head = iter->list->tail = NULL;
+      275:  389:    iter->node = NULL;
+      275:  390:    return false;
+       62:  391:  } else if (iter->node == iter->list->head) {
+        -:  392:    // Head case popo
+       59:  393:    iter->list->head = iter->node->next;
+       59:  394:    free(iter->node);
+       59:  395:    iter->node = iter->list->head;  // reassigns the reference
+       59:  396:    iter->node->prev = NULL;
+       59:  397:    (iter->list->num_elements)--;
+        3:  398:  } else if (iter->node == iter->list->tail) {
+        -:  399:    // Tail case slice
+        1:  400:    iter->list->tail = iter->node->prev;
+        1:  401:    free(iter->node);
+        1:  402:    iter->node = iter->list->tail;
+        1:  403:    iter->node->next = NULL;
+        1:  404:    (iter->list->num_elements)--;
+        -:  405:  } else {
+        -:  406:    // General case
+        2:  407:    temp = iter->node->next;
+        2:  408:    iter->node->prev->next = iter->node->next;
+        2:  409:    iter->node->next->prev = iter->node->prev;
+        2:  410:    free(iter->node);
+        2:  411:    iter->node = temp;
+        2:  412:    (iter->list->num_elements)--;
+        -:  413:  }
+        -:  414:
+       62:  415:  return true;
+        -:  416:}
+        -:  417:
+        2:  418:bool LLIteratorInsertBefore(LLIter iter, LLPayload_t payload) {
+        -:  419:  // defensive programming
+        2:  420:  Verify333(iter != NULL);
+        2:  421:  Verify333(iter->list != NULL);
+        2:  422:  Verify333(iter->node != NULL);
+        -:  423:
+        -:  424:  // If the cursor is pointing at the head, use our
+        -:  425:  // PushLinkedList function.
+        2:  426:  if (iter->node == iter->list->head) {
+        1:  427:    return PushLinkedList(iter->list, payload);
+        -:  428:  }
+        -:  429:
+        -:  430:  // General case: we have to do some splicing.
+        1:  431:  LinkedListNodePtr newnode =
+        -:  432:    (LinkedListNodePtr) malloc(sizeof(LinkedListNode));
+        1:  433:  if (newnode == NULL)
+    #####:  434:    return false;  // out of memory
+        -:  435:
+        1:  436:  newnode->payload = payload;
+        1:  437:  newnode->next = iter->node;
+        1:  438:  newnode->prev = iter->node->prev;
+        1:  439:  newnode->prev->next = newnode;
+        1:  440:  newnode->next->prev = newnode;
+        1:  441:  iter->list->num_elements += 1;
+        1:  442:  return true;
+        -:  443:}

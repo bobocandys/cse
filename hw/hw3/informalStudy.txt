@@ -1,0 +1,41 @@
+Youying Lin 1237808
+
+This is the informal study of why a search result using the frequency
+as the rank is better than the original one.
+
+Here is what the filesearchshell returned with query "cananda west".
+We can see that now for those wiki web pages, even though they have 
+way fewer words than those books, their rank will not be largely 
+affected by the length of the file. Now the results are ranked
+more by relevance than occurence. 
+
+Enter query:
+canada west
+  test_tree/books/ulysses.txt (23)total word: 267998
+  test_tree/books/mobydick.txt (18)total word: 215161
+  test_tree/books/taleoftwocities.txt (5.00001)total word: 138916
+  http://en.wikipedia.org/wiki/West_Jasper_Place,_Edmonton (4.01786)total word: 56
+  http://en.wikipedia.org/wiki/West_Vent (3.02632)total word: 38
+  http://en.wikipedia.org/wiki/Windsor_Park,_Edmonton (3.01961)total word: 51
+  http://en.wikipedia.org/wiki/Volcano_Vent (2.02439)total word: 41
+  http://en.wikipedia.org/wiki/Grizzly_Butte (2.02381)total word: 42
+  http://en.wikipedia.org/wiki/York_Boulevard (2.02326)total word: 43
+  http://en.wikipedia.org/wiki/York,_Edmonton (2.02326)total word: 43
+  http://en.wikipedia.org/wiki/Lynnwood,_Edmonton (2.02128)total word: 47
+  http://en.wikipedia.org/wiki/Patricia_Heights,_Rio_Terrace,_and_Quesnell (2.01389)total word: 72
+  test_tree/enron_email/577. (2.00014)total word: 7394
+  http://en.wikipedia.org/wiki/John_Kalbhenn (1.02381)total word: 42
+  http://en.wikipedia.org/wiki/Anahim_hotspot (1.02326)total word: 43
+  http://en.wikipedia.org/wiki/Mill_Creek_Ravine (1.02174)total word: 46
+  http://en.wikipedia.org/wiki/Great_Whale_River (1.02174)total word: 46
+  http://en.wikipedia.org/wiki/Beasley,_Hamilton (1.02174)total word: 46
+  http://en.wikipedia.org/wiki/Oak_Hammock_Marsh (1.02174)total word: 46
+  http://en.wikipedia.org/wiki/Elmwood,_Edmonton (1.02174)total word: 46
+  http://en.wikipedia.org/wiki/Mayfield,_Edmonton (1.02128)total word: 47
+  http://en.wikipedia.org/wiki/Avonmore,_Edmonton (1.02128)total word: 47
+  http://en.wikipedia.org/wiki/McKernan,_Edmonton (1.02128)total word: 47
+  http://en.wikipedia.org/wiki/Summerlea,_Edmonton (1.02083)total word: 48
+  http://en.wikipedia.org/wiki/Belgravia,_Edmonton (1.02083)total word: 48
+  http://en.wikipedia.org/wiki/Henry_Wellesly_McCann (1.02)total word: 50
+  http://en.wikipedia.org/wiki/Eaux_Claires,_Edmonton (1.01961)total word: 51
+Enter query:
